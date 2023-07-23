@@ -1,12 +1,14 @@
-package com.charapadev.zeromusic.music;
+package com.charapadev.zeromusic.author;
 
-import com.charapadev.zeromusic.author.Author;
+import com.charapadev.zeromusic.music.Music;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -15,28 +17,27 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "musics")
-public class Music implements Serializable {
+@Table(name = "authors")
+public class Author implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String name;
 
-    @Column
-    private String coverUrl;
+    @OneToMany(mappedBy = "author") @ToString.Exclude
+    private Set<Music> musics;
 
-    @Column
-    private String fileUrl;
-
-    @ManyToOne(fetch = FetchType.LAZY) @ToString.Exclude
-    private Author author;
+    private void addMusic(Music music) {
+        if (this.musics == null) this.musics = new HashSet<>();
+        musics.add(music);
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Music compared = (Music) o;
+        Author compared = (Author) o;
         return getId() != null && Objects.equals(getId(), compared.getId());
     }
 
