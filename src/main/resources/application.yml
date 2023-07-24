@@ -6,3 +6,14 @@ spring:
       ddl-auto: update
     properties:
       dialect: org.hibernate.dialect.H2Dialect
+cloud:
+  aws:
+    credentials:
+      access-key: test
+      secret-key: test
+    region:
+      static: us-east-1
+      auto: false
+    s3:
+      url: https://s3.localhost.localstack.cloud:4566
+      bucket-name: zero-music-bucket

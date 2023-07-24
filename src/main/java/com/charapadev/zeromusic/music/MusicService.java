@@ -3,20 +3,29 @@ package com.charapadev.zeromusic.music;
 import com.charapadev.zeromusic.author.Author;
 import com.charapadev.zeromusic.author.AuthorService;
 import com.charapadev.zeromusic.author.ShowAuthorDTO;
+import com.charapadev.zeromusic.storage.FileEnum;
+import com.charapadev.zeromusic.storage.StorageService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class MusicService {
     private final MusicRepository musicRepository;
     private final AuthorService authorService;
+    private final StorageService storageService;
 
     public List<Music> list() {
         return musicRepository.findAll();
+    }
+
+    private Music save(Music music) {
+        return musicRepository.save(music);
     }
 
     public Music create(CreateMusicDTO createDTO, Author author) {
@@ -25,9 +34,37 @@ public class MusicService {
             .author(author)
             .build();
 
-        musicToCreate = musicRepository.save(musicToCreate);
+        musicToCreate = save(musicToCreate);
+
+        // Uploading cover image and music file
+        Optional.ofNullable(uploadCover(createDTO.cover(), musicToCreate.getId()))
+            .ifPresent(musicToCreate::setCoverUrl);
+        Optional.ofNullable(uploadMusic(createDTO.file(), musicToCreate.getId()))
+            .ifPresent(musicToCreate::setFileUrl);
+
+        musicToCreate = save(musicToCreate);
         return musicToCreate;
     }
+
+    private String uploadCover(String base64data, Long musicID) {
+        return uploadFile(base64data, musicID, FileEnum.COVER);
+    }
+
+    private String uploadMusic(String base64data, Long musicID) {
+        return uploadFile(base64data, musicID, FileEnum.MUSIC);
+    }
+
+    private String uploadFile(String base64data, Long musicID, FileEnum fileType) {
+        try {
+            if (Objects.requireNonNull(base64data).isBlank()) return null;
+
+            return storageService.uploadFile(base64data, musicID, fileType);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+
 
     public Music getOne(Long id) throws NoSuchElementException {
         return musicRepository.findById(id)
