@@ -3,6 +3,8 @@ package com.charapadev.zeromusic.music;
 import com.charapadev.zeromusic.author.Author;
 import com.charapadev.zeromusic.author.AuthorService;
 import com.charapadev.zeromusic.author.ShowAuthorDTO;
+import com.charapadev.zeromusic.messages.Message;
+import com.charapadev.zeromusic.messages.MessageService;
 import com.charapadev.zeromusic.storage.FileEnum;
 import com.charapadev.zeromusic.storage.StorageService;
 import lombok.AllArgsConstructor;
@@ -19,6 +21,7 @@ public class MusicService {
     private final MusicRepository musicRepository;
     private final AuthorService authorService;
     private final StorageService storageService;
+    private final MessageService messageService;
 
     public List<Music> list() {
         return musicRepository.findAll();
@@ -64,11 +67,11 @@ public class MusicService {
         }
     }
 
-
-
-    public Music getOne(Long id) throws NoSuchElementException {
+    public Music getOne(Long id) {
         return musicRepository.findById(id)
-            .orElseThrow();
+            .orElseThrow(
+                () -> new NoSuchElementException(messageService.resolve(Message.MUSIC_NOT_FOUND_BY_ID))
+            );
     }
 
     public ShowMusicDTO convert(Music music) {

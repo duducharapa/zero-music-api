@@ -1,5 +1,7 @@
 package com.charapadev.zeromusic.author;
 
+import com.charapadev.zeromusic.messages.Message;
+import com.charapadev.zeromusic.messages.MessageService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +12,7 @@ import java.util.NoSuchElementException;
 @AllArgsConstructor
 public class AuthorService {
     private final AuthorRepository authorRepository;
+    private final MessageService messageService;
 
     public List<Author> list() {
         return authorRepository.findAll();
@@ -33,6 +36,8 @@ public class AuthorService {
 
     public Author getOne(Long id) throws NoSuchElementException {
         return authorRepository.findById(id)
-            .orElseThrow();
+            .orElseThrow(
+                () -> new NoSuchElementException(messageService.resolve(Message.AUTHOR_NOT_FOUND_BY_ID))
+            );
     }
 }
