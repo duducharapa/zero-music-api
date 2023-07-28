@@ -27,13 +27,6 @@ public class AuthorService {
         return authorToCreate;
     }
 
-    public ShowAuthorDTO convert(Author author) {
-        return ShowAuthorDTO.builder()
-            .id(author.getId())
-            .name(author.getName())
-            .build();
-    }
-
     public Author getOne(Long id) throws NoSuchElementException {
         return authorRepository.findById(id)
             .orElseThrow(

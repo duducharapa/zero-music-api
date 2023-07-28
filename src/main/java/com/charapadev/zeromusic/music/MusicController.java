@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/musics")
@@ -15,11 +16,12 @@ import java.util.List;
 public class MusicController {
     private final MusicService musicService;
     private final AuthorService authorService;
+    private final MusicMapper musicMapper;
 
     @GetMapping
     public ResponseEntity<List<ShowMusicDTO>> list() {
         List<ShowMusicDTO> musicsFound = musicService.list().stream()
-            .map(musicService::convert).toList();
+            .map(musicMapper::fromMusicToShow).toList();
 
         return ResponseEntity.ok(musicsFound);
     }
@@ -27,18 +29,19 @@ public class MusicController {
     @PostMapping
     public ResponseEntity<ShowMusicDTO> create(@RequestBody CreateMusicDTO createDTO) {
         Author authorFound = authorService.getOne(createDTO.authorID());
+        ShowMusicDTO createdMusic = Optional.of(musicService.create(createDTO, authorFound))
+            .map(musicMapper::fromMusicToShow)
+            .orElseThrow(RuntimeException::new);
 
-        Music createdMusic = musicService.create(createDTO, authorFound);
-        ShowMusicDTO showMusic = musicService.convert(createdMusic);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(showMusic);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdMusic);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ShowMusicDTO> find(@PathVariable("id") Long id) {
-        Music musicFound = musicService.getOne(id);
-        ShowMusicDTO showMusic = musicService.convert(musicFound);
+        ShowMusicDTO musicFound = Optional.of(musicService.getOne(id))
+            .map(musicMapper::fromMusicToShow)
+            .orElseThrow(RuntimeException::new);
 
-        return ResponseEntity.ok(showMusic);
+        return ResponseEntity.ok(musicFound);
     }
 }

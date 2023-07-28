@@ -6,34 +6,39 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/authors")
 @AllArgsConstructor
 public class AuthorController {
     private final AuthorService authorService;
+    private final AuthorMapper authorMapper;
 
     @GetMapping
     public ResponseEntity<List<ShowAuthorDTO>> list() {
         List<ShowAuthorDTO> authorsFound = authorService.list().stream()
-            .map(authorService::convert).toList();
+            .map(authorMapper::fromAuthorToShow).toList();
 
         return ResponseEntity.ok(authorsFound);
     }
 
     @PostMapping
     public ResponseEntity<ShowAuthorDTO> create(@RequestBody CreateAuthorDTO createDTO) {
-        Author createdAuthor = authorService.create(createDTO);
-        ShowAuthorDTO showAuthor = authorService.convert(createdAuthor);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(showAuthor);
+        ShowAuthorDTO createdAuthor = Optional.of(authorService.create(createDTO))
+            .map(authorMapper::fromAuthorToShow)
+            .orElseThrow(RuntimeException::new);
+;
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAuthor);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ShowAuthorDTO> find(@PathVariable("id") Long id) {
-        Author authorFound = authorService.getOne(id);
-        ShowAuthorDTO showAuthor = authorService.convert(authorFound);
+        ShowAuthorDTO authorFound = Optional.of(authorService.getOne(id))
+            .map(authorMapper::fromAuthorToShow)
+            .orElseThrow(RuntimeException::new);
 
-        return ResponseEntity.ok(showAuthor);
+        return ResponseEntity.ok(authorFound);
     }
 }

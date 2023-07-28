@@ -73,16 +73,4 @@ public class MusicService {
                 () -> new NoSuchElementException(messageService.resolve(Message.MUSIC_NOT_FOUND_BY_ID))
             );
     }
-
-    public ShowMusicDTO convert(Music music) {
-        ShowAuthorDTO author = authorService.convert(music.getAuthor());
-
-        return ShowMusicDTO.builder()
-            .id(music.getId())
-            .name(music.getName())
-            .coverUrl(music.getCoverUrl())
-            .fileUrl(music.getFileUrl())
-            .author(author)
-            .build();
-    }
 }
