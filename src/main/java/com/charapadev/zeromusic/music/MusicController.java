@@ -35,7 +35,10 @@ public class MusicController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<ShowMusicDTO> create(@Valid @RequestBody CreateMusicDTO createDTO) {
-        Author authorFound = authorService.getOne(createDTO.authorID());
+        Author authorFound = createDTO.authorID() != null ?
+            authorService.getOne(createDTO.authorID())  :
+            null;
+
         ShowMusicDTO createdMusic = Optional.of(musicService.create(createDTO, authorFound))
             .map(musicMapper::fromMusicToShow)
             .orElseThrow(RuntimeException::new);
