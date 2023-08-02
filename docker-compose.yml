@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  localstack:
+    container_name: zero_music_localstack
+    image: localstack/localstack:latest
+    ports:
+      - 4566:4566
+      - 4510-4559:4510-4559
+    environment:
+      - SERVICES=s3
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - infra
+  splunk:
+    container_name: zero_music_splunk
+    image: splunk/splunk:latest
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=password
+    ports:
+      - 8000:8000
+      - 8088:8088
+    networks:
+      - infra
+  api:
+    container_name: zero_music_api
+    image: charapadev/zero-music-api:latest
+    ports:
+      - 9000:9000
+    environment:
+      - CLOUD_AWS_CREDENTIALS_ACCESS-KEY=test
+      - CLOUD_AWS_CREDENTIALS_SECRET-KEY=test
+      - CLOUD_AWS_REGION_STATIC=us-east-1
+      - CLOUD_AWS_S3_BUCKET-NAME=zero-music-bucket
+      - CLOUD_AWS_S3_URL=http://172.17.0.1:4566
+    networks:
+      - backend
+      - infra
+networks:
+  backend:
+  infra:
